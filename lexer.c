@@ -3,68 +3,72 @@
 #include <stdlib.h>
 #include "lexer.h"
 
+char *string_token[] = {
+    "DECLARE\0", "DRIVER\0", "PROGRAM\0", "FOR\0", "START\0", "END\0", "MODULE\0", "GET_VALUE\0", "PRINT\0", "USE\0", 
+    "WITH\0", "PARAMETERS\0", "TRUE\0", "FALSE\0", "TAKES\0", "INPUT\0", "RETURNS\0", "AND\0", "OR\0", "SWITCH\0", 
+    "CASE\0", "BREAK\0", "DEFAULT\0", "WHILE\0", "INTEGER\0", "REAL\0", "BOOLEAN\0", "OF\0", "ARRAY\0", "IN\0", "ID\0", 
+    "RNUM\0", "NUM\0", "COLON\0", "ASSIGNOP\0", "COMMA\0", "NE\0", "RANGEOP\0", "GT\0", "ENDDEF\0", "GE\0", "SEMICOL\0", 
+    "EQ\0", "MINUS\0", "LT\0", "DEF\0", "LE\0", "PLUS\0", "MUL\0", "COMMENTMARK\0", "DIV\0", "SQBO\0", "SQBC\0", "BO\0", 
+    "BC\0", "DRIVERDEF\0", "DRIVERENDDEF\0", "$\0", "e\0"
+};
+
 int line_num = 1;
-struct token *head=NULL, *last=NULL;
+struct token *head=NULL, *last=NULL, *current=NULL;
 
 void appendSymbol(int id) {
     struct token *curr = (struct token*)malloc(sizeof(struct token));
 
     switch(id) {
-        case 1 : strcpy(curr->type, "COLON\0");
+        case 1 : strcpy(curr->lexeme, ":\0");
             break;
-        case 2 : strcpy(curr->type, "ASSIGNOP\0");
+        case 2 : strcpy(curr->lexeme, ":=\0");
             break;
-        case 3 : strcpy(curr->type, "COMMA\0");
+        case 3 : strcpy(curr->lexeme, ",\0");
             break;
-        case 4 : strcpy(curr->type, "NE\0");
+        case 4 : strcpy(curr->lexeme, "!=\0");
             break;
-        case 5 : strcpy(curr->type, "RANGEOP\0");
+        case 5 : strcpy(curr->lexeme, "..\0");
             break;
-        case 6 : strcpy(curr->type, "GT\0");
+        case 6 : strcpy(curr->lexeme, ">\0");
             break;
-        case 7 : strcpy(curr->type, "ENDDEF\0");
+        case 7 : strcpy(curr->lexeme, ">>\0");
             break;
-        case 8 : strcpy(curr->type, "GE\0");
+        case 8 : strcpy(curr->lexeme, ">=\0");
             break;
-        case 9 : strcpy(curr->type, "SEMICOL\0");
+        case 9 : strcpy(curr->lexeme, ";\0");
             break;
-        case 10 : strcpy(curr->type, "EQ\0");
+        case 10 : strcpy(curr->lexeme, "==\0");
             break;
-        case 11 : strcpy(curr->type, "MINUS\0");
+        case 11 : strcpy(curr->lexeme, "-\0");
             break;
-        case 12 : strcpy(curr->type, "LT\0");
+        case 12 : strcpy(curr->lexeme, "<\0");
             break;
-        case 13 : strcpy(curr->type, "DEF\0");
+        case 13 : strcpy(curr->lexeme, "<<\0");
             break;
-        case 14 : strcpy(curr->type, "LE\0");
+        case 14 : strcpy(curr->lexeme, "<=\0");
             break;
-        case 15 : strcpy(curr->type, "PLUS\0");
+        case 15 : strcpy(curr->lexeme, "+\0");
             break;
-        case 16 : strcpy(curr->type, "MUL\0");
+        case 16 : strcpy(curr->lexeme, "*\0");
             break;
-        case 17 : strcpy(curr->type, "COMMENTMARK\0");
+        case 17 : strcpy(curr->lexeme, "**\0");
             break;
-        case 18 : strcpy(curr->type, "DIV\0");
+        case 18 : strcpy(curr->lexeme, "/\0");
             break;
-        case 19 : strcpy(curr->type, "SQBO\0");
+        case 19 : strcpy(curr->lexeme, "[\0");
             break;
-        case 20 : strcpy(curr->type, "SQBC\0");
+        case 20 : strcpy(curr->lexeme, "]\0");
             break;
-        case 21 : strcpy(curr->type, "BO\0");
+        case 21 : strcpy(curr->lexeme, "(\0");
             break;
-        case 22 : strcpy(curr->type, "BC\0");
+        case 22 : strcpy(curr->lexeme, ")\0");
             break;
-        case 23 : strcpy(curr->type, "DRIVERDEF\0");
+        case 23 : strcpy(curr->lexeme, "<<<\0");
             break;
-        case 24 : strcpy(curr->type, "DRIVERENDDEF\0");
-            break;
-        case 25 : strcpy(curr->type, "NUM\0");
-            break;
-        case 26 : strcpy(curr->type, "RNUM\0");
-            break;
-        case 27 : strcpy(curr->type, "ID\0");
+        case 24 : strcpy(curr->lexeme, ">>>\0");
             break;
     }
+    curr->tokenID = NUM+id;
     curr->next = NULL;
     curr->line_num = line_num;
     curr->prev = last;
@@ -72,13 +76,12 @@ void appendSymbol(int id) {
     last = last->next;
 }
 
-void addKeyword(char *keyword) {
+void addKeyword(int id, char *keyword) {
     struct token *curr = (struct token*)malloc(sizeof(struct token));
 
     int i=0;
-    while (keyword[i])
-        keyword[i] = toupper(keyword[i++]);
-    strcpy(curr->type, keyword);
+    strcpy(curr->lexeme, keyword);
+    curr->tokenID = id;
     curr->next = NULL;
     curr->line_num = line_num;
     curr->prev = last;
@@ -94,8 +97,33 @@ int isKeyword(char *word) {
     int i=0;
     while (i < 30)
         if (strcmp(list[i++], word) == 0)
-            return 1;
-    return 0;
+            return i-1;
+    return -1;
+}
+
+void addID(char *id) {
+    struct token *curr = (struct token*)malloc(sizeof(struct token));
+
+    curr->tokenID = ID;
+    strcpy(curr->lexeme, id);
+    curr->next = NULL;
+    curr->line_num = line_num;
+    curr->prev = last;
+    last->next = curr;
+    last = last->next;
+}
+
+void addNUM(int n_or_r, char *num) {
+    struct token *curr = (struct token*)malloc(sizeof(struct token));
+
+    if (n_or_r == 1) curr->tokenID = NUM;
+    else curr->tokenID = RNUM;
+    strcpy(curr->lexeme, num);
+    curr->next = NULL;
+    curr->line_num = line_num;
+    curr->prev = last;
+    last->next = curr;
+    last = last->next;
 }
 
 void matchSymbols(char *buf) {
@@ -115,39 +143,58 @@ void matchSymbols(char *buf) {
                 id[i++] = buf[index++];
             
             id[i] = '\0';
-            if (isKeyword(id))
-                addKeyword(id);
+            int type = isKeyword(id);
+            if (type != -1)
+                addKeyword(type, id);
             else if (i > 8) {
                 //printf(" Identifier at line %d is longer than the prescribed length\n", line_num);Handle the ERROR
             }
             else
-                appendSymbol(27);
+                addID(id);
             index--;
         }
         
         else if (front >= '0' && front <= '9') {
+            char num[20];
+            int i=0;
+            num[i++] = front;
             front = buf[++index];
-            while (front >= '0' && front <= '9')
+            while (front >= '0' && front <= '9') {
+                num[i++] = front;
                 front = buf[++index];
+            }
 
-            if (front != '.')
-                appendSymbol(25);
+            if (front != '.') {
+                num[i] = '\0';
+                addNUM(1,num);
+            }
 
             else {
-                if (buf[index+1] == '.')
-                    appendSymbol(25);
+                if (buf[index+1] == '.') {
+                    num[i] = '\0';
+                    addNUM(1,num);
+                }
                 else {
+                    num[i++] = '.';
                     front = buf[++index];
-                    while (front >= '0' && front <= '9')
+                    while (front >= '0' && front <= '9') {
+                        num[i++] = front;
                         front = buf[++index];
-                    if (front == 'E' || front == 'e') {
-                        front = buf[++index];
-                        if (front == '+' || front == '-')
-                            front = buf[++index];
-                        while (front >= '0' && front <= '9')
-                            front = buf[++index];
                     }
-                    appendSymbol(26);
+                    if (front == 'E' || front == 'e') {
+                        num[i++] = front;
+                        front = buf[++index];
+                        if (front == '+' || front == '-') {
+                            num[i++] = front;
+                            front = buf[++index];
+                        }
+                        while (front >= '0' && front <= '9') {
+                            num[i++] = front;
+                            front = buf[++index];
+                        }
+                    }
+                    num[i] = '\0';
+                    addNUM(0,num);
                 }
             }
             index--;
@@ -296,7 +343,7 @@ void generateList(char *file) {
     FILE *read = fopen(file,"r");
     char buf[BUFFER_SIZE+1];
     head = (struct token*)malloc(sizeof(struct token));
-    last = head;
+    last = current = head;
     read = getStream(read, buf);
     while(read != NULL) {
         matchSymbols(buf);
@@ -304,10 +351,56 @@ void generateList(char *file) {
     }
 }
 
+struct token* getNextToken() {
+    if (current) {
+        current = current->next;
+        return current;
+    }
+    else {
+        current = head;
+        return current;
+    }
+}
+
 void printlist() {
     struct token *temp = head->next;
     while (temp != NULL) {
-        printf("%s\n",temp->type);
+        printf("%s %s %d\n",string_token[temp->tokenID], temp->lexeme, temp->line_num);
         temp = temp->next;
+    }
+}
+
+struct token* getFirst() {
+    return head;
+}
+
+void removeComments(char *testcaseFile, char *cleanFile) {
+    FILE *read = fopen(testcaseFile, "r");
+    FILE *out = fopen(cleanFile, "w");
+
+    char buf[BUFFER_SIZE+1];
+    read = getStream(read, buf);
+    while (read) {
+        int index=0;
+        int flag = 0;
+        int len = strlen(buf);
+        while (index < len) {
+            if (flag == 1) {
+                while ((buf[index] != '*' || buf[index] != '*') && index < len)
+                    index++;
+            }
+            while ((buf[index] != '*' || buf[index] != '*') && index < len)
+                fprintf(out, "%c", buf[index++]);
+            if (index >= len)
+                break;
+            else {
+                if (flag)
+                    flag = 0;
+                else
+                    flag = 1;
+                index+=2;
+            }
+        }
+        read = getStream(read, buf);
     }
 }
