@@ -1,17 +1,30 @@
+/*
+BATCH NUMBER 75
+AMAN AGARWAL 2014A7PS042P
+MANIK BHANDARI 2014A7PS088P
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "lexer.h"
-
-char *string_token[] = {
-    "DECLARE\0", "DRIVER\0", "PROGRAM\0", "FOR\0", "START\0", "END\0", "MODULE\0", "GET_VALUE\0", "PRINT\0", "USE\0", 
-    "WITH\0", "PARAMETERS\0", "TRUE\0", "FALSE\0", "TAKES\0", "INPUT\0", "RETURNS\0", "AND\0", "OR\0", "SWITCH\0", 
-    "CASE\0", "BREAK\0", "DEFAULT\0", "WHILE\0", "INTEGER\0", "REAL\0", "BOOLEAN\0", "OF\0", "ARRAY\0", "IN\0", "ID\0", 
-    "RNUM\0", "NUM\0", "COLON\0", "ASSIGNOP\0", "COMMA\0", "NE\0", "RANGEOP\0", "GT\0", "ENDDEF\0", "GE\0", "SEMICOL\0", 
-    "EQ\0", "MINUS\0", "LT\0", "DEF\0", "LE\0", "PLUS\0", "MUL\0", "COMMENTMARK\0", "DIV\0", "SQBO\0", "SQBC\0", "BO\0", 
-    "BC\0", "DRIVERDEF\0", "DRIVERENDDEF\0", "$\0", "e\0"
+#include "lexerDef.h"
+// #include "forstring.h"
+char *string_tokens_lexer[] = {
+    "DECLARE\0", "DRIVER\0", "PROGRAM\0", "FOR\0", "START\0", "END\0", "MODULE\0", "GET_VALUE\0", "PRINT\0", 
+    "USE\0", "WITH\0", "PARAMETERS\0", "TRUE\0", "FALSE\0", "TAKES\0", "INPUT\0", "RETURNS\0", "AND\0", "OR\0", 
+    "SWITCH\0", "CASE\0", "BREAK\0", "DEFAULT\0", "WHILE\0", "INTEGER\0", "REAL\0", "BOOLEAN\0", "OF\0", "ARRAY\0", 
+    "IN\0", "ID\0", "RNUM\0", "NUM\0", "COLON\0", "ASSIGNOP\0", "COMMA\0", "NE\0", "RANGEOP\0", "GT\0", "ENDDEF\0", 
+    "GE\0", "SEMICOL\0", "EQ\0", "MINUS\0", "LT\0", "DEF\0", "LE\0", "PLUS\0", "MUL\0", "COMMENTMARK\0", "DIV\0", 
+    "SQBO\0", "SQBC\0", "BO\0", "BC\0", "DRIVERDEF\0", "DRIVERENDDEF\0", "$\0", "e\0", "program\0", 
+    "moduleDeclarations\0", "otherModules\0", "driverModule\0", "moduleDeclaration\0", "module\0", "moduleDef\0", 
+    "input_plist\0", "ret\0", "output_plist\0", "dataType\0", "input_plist2\0", "type\0", "output_plist2\0", 
+    "range\0", "statements\0", "statement\0", "ioStmt\0", "simpleStmt\0", "declareStmt\0", "conditionalStmt\0", 
+    "iterativeStmt\0", "var\0", "whichId\0", "assignmentStmt\0", "moduleReuseStmt\0", "whichStmt\0", "lvalueIDStmt\0", 
+    "lvalueARRStmt\0", "expression\0", "index1\0", "optional\0", "idList\0", "idList2\0", "arithmeticOrBooleanExpr\0", 
+    "arithmeticExpr\0", "anyTerm\0", "arithmeticOrBooleanExpr2\0", "logicalOp\0", "anyTerm2\0", "relationalOp\0", 
+    "term\0", "arithmeticExpr2\0", "op1\0", "factor\0", "term2\0", "op2\0", "caseStmts\0", "default1\0", "value\0", 
+    "caseStmt\0"
 };
-
+int flag_temp=0;
 int line_num = 1;
 struct token *head=NULL, *last=NULL, *current=NULL;
 
@@ -129,10 +142,17 @@ void addNUM(int n_or_r, char *num) {
 void matchSymbols(char *buf) {
     int index=0;
     int len = strlen(buf);
-    int flag=0;
     char front = buf[index];
 
     while (index < len) {
+
+        if (flag_temp == 1) {
+            while (!((buf[index] == '*') && (buf[index+1] == '*')) && (index < len))
+                index++;
+            if (index == len)
+                index--;
+            front = buf[index];
+        }
 
         if ((front >= 'A' && front <= 'Z') || (front >= 'a' && front <= 'z')) {
             char id[20];
@@ -147,7 +167,7 @@ void matchSymbols(char *buf) {
             if (type != -1)
                 addKeyword(type, id);
             else if (i > 8) {
-                //printf(" Identifier at line %d is longer than the prescribed length\n", line_num);Handle the ERROR
+                printf(" Identifier at line %d is longer than the prescribed length\n", line_num);
             }
             else
                 addID(id);
@@ -157,6 +177,9 @@ void matchSymbols(char *buf) {
         else if (front >= '0' && front <= '9') {
             char num[20];
             int i=0;
+            // int temp1, temp2;
+            // temp1 = temp2 = 0;
+            // int dec=0, pow=0;
             num[i++] = front;
             front = buf[++index];
             while (front >= '0' && front <= '9') {
@@ -217,7 +240,7 @@ void matchSymbols(char *buf) {
                 appendSymbol(4);
             }
             else
-                ;// printf("Unknown Symbol !%c at line %d", buf[index+1], line_num);Handle the ERROR
+                printf("Unknown Symbol !%c at line %d", buf[index+1], line_num);
         }
 
         else if (front == '.') {
@@ -226,7 +249,7 @@ void matchSymbols(char *buf) {
                 appendSymbol(5);
             }
             else
-                ;// printf("Unknown Symbol .%c at line %d", buf[index+1], line_num);Handle the ERROR
+                printf("Unknown Symbol .%c at line %d", buf[index+1], line_num);
         }
 
         else if (front == '>') {
@@ -256,7 +279,7 @@ void matchSymbols(char *buf) {
                 appendSymbol(10);
             }
             else
-                ;// printf("Unknown Symbol =%c at line %d", buf[index+1], line_num);Handle the ERROR
+                printf("Unknown Symbol =%c at line %d", buf[index+1], line_num);
         }
         else if (front == '-')
             appendSymbol(11);
@@ -284,10 +307,10 @@ void matchSymbols(char *buf) {
             if (buf[index+1] == '*') {
                 appendSymbol(17);
                 index++;
-                if (!flag)
-                    flag = 1;
+                if (!flag_temp)
+                    flag_temp = 1;
                 else {
-                    flag = 0;
+                    flag_temp = 0;
                     front = buf[++index];
                     continue;
                 }
@@ -314,6 +337,8 @@ void matchSymbols(char *buf) {
             appendSymbol(22);
         else if (front == '\n')
             line_num++;
+        // else if (front != ' ' || front != '\t')
+        //     printf("Unknown pattern %c at line %d\n", front, line_num);
         
         front = buf[++index];
 		while (front == ' ' || front == '\t')
@@ -365,13 +390,9 @@ struct token* getNextToken() {
 void printlist() {
     struct token *temp = head->next;
     while (temp != NULL) {
-        printf("%s %s %d\n",string_token[temp->tokenID], temp->lexeme, temp->line_num);
+        printf("%s %s %d\n",string_tokens_lexer[temp->tokenID], temp->lexeme, temp->line_num);
         temp = temp->next;
     }
-}
-
-struct token* getFirst() {
-    return head;
 }
 
 void removeComments(char *testcaseFile, char *cleanFile) {
@@ -403,4 +424,42 @@ void removeComments(char *testcaseFile, char *cleanFile) {
         }
         read = getStream(read, buf);
     }
+}
+
+void removeCommentsConsole(char *testcaseFile) {
+    FILE *read = fopen(testcaseFile, "r");
+    // FILE *out = fopen(cleanFile, "w");
+    int flag = 0;
+    char buf[BUFFER_SIZE+1];
+    read = getStream(read, buf);
+    while (read) {
+        int index=0;
+        // int flag = 0;
+        int len = strlen(buf);
+        while (index < len) {
+            if (flag == 1) {
+                while ((buf[index] != '*' || buf[index+1] != '*') && index < len)
+                    index++;
+            }
+            while ((buf[index] != '*' || buf[index+1] != '*') && index < len)
+                printf("%c", buf[index++]);
+            if (index >= len)
+                break;
+            else {
+                if (flag)
+                    flag = 0;
+                else
+                    flag = 1;
+                index+=2;
+            }
+        }
+        read = getStream(read, buf);
+    }
+}
+
+struct token* getFirst() {
+    return head;
+}
+struct token *returnHead(){
+    return head;
 }

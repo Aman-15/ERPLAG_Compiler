@@ -1,22 +1,14 @@
-#ifndef lexer
-#define lexer
+/*
+BATCH NUMBER 75
+AMAN AGARWAL 2014A7PS042P
+MANIK BHANDARI 2014A7PS088P
+*/
+#ifndef LEXER_H
+#define LEXER_H
 #include <stdio.h>
-
-#define BUFFER_SIZE 100
-
-enum enum_token {
-    DECLARE, DRIVER, PROGRAM, FOR, START, END, MODULE, GET_VALUE, PRINT, USE, WITH, PARAMETERS, TRUE, FALSE,
-    TAKES, INPUT, RETURNS, AND, OR, SWITCH, CASE, BREAK, DEFAULT, WHILE, INTEGER, REAL, BOOLEAN, OF, ARRAY, 
-    IN, ID, RNUM, NUM, COLON, ASSIGNOP, COMMA, NE, RANGEOP, GT, ENDDEF, GE, SEMICOL, EQ, MINUS, LT, DEF,
-    LE, PLUS, MUL, COMMENTMARK, DIV, SQBO, SQBC, BO, BC, DRIVERDEF, DRIVERENDDEF, $, e
-};
-
-struct token {
-    enum enum_token tokenID;
-    char lexeme[20];
-    struct token *prev, *next;
-    int line_num;
-};
+#include <string.h>
+#include <stdlib.h>
+#include "lexerDef.h"
 
 void appendSymbol(int id);
 void addKeyword(int id, char *keyword);
@@ -29,5 +21,8 @@ void generateList(char *file);
 struct token* getNextToken();
 void printlist();
 void removeComments(char *testcaseFile, char *cleanFile);
+void removeCommentsConsole(char *testcaseFile);
+struct token* getFirst(); 
+struct token *returnHead();
 
-#endif // lexer
+#endif
